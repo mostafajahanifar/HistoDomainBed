@@ -15,6 +15,9 @@ import numpy as np
 import torch
 from collections import Counter
 from itertools import cycle
+from sklearn.metrics import f1_score
+from sklearn.metrics import accuracy_score
+
 
 
 def distance(h1, h2):
@@ -209,6 +212,101 @@ def accuracy(network, loader, weights, device):
     network.train()
 
     return correct / total
+
+def f1score(network, loader, weights, device, average='micro'):
+    y_true = []
+    y_pred = []
+    sample_weights = []
+    network.eval()
+    with torch.no_grad():
+        for x, y in loader:
+            x = x.to(device)
+            y = y.to(device)
+            p = network.predict(x)
+            if p.size(1) == 1:
+                y_pred.extend(p.gt(0).squeeze().cpu().numpy())
+            else:
+                y_pred.extend(p.argmax(1).cpu().numpy())
+            y_true.extend(y.cpu().numpy())
+            if weights is not None:
+                sample_weights.extend(weights.cpu().numpy())
+    network.train()
+    
+    if weights is None:
+        return f1_score(y_true, y_pred, average=average)
+    else:
+        return f1_score(y_true, y_pred, average=average, sample_weight=sample_weights)
+    
+def accuracy_f1score(network, loader, weights, device, average='micro'):
+    y_true = []
+    y_pred = []
+    sample_weights = None if weights is None else []
+    network.eval()
+    with torch.no_grad():
+        for x, y in loader:
+            x = x.to(device)
+            y = y.to(device)
+            p = network.predict(x)
+            if p.size(1) == 1:
+                y_pred.extend(p.gt(0).squeeze().cpu().numpy())
+            else:
+                y_pred.extend(p.argmax(1).cpu().numpy())
+            y_true.extend(y.cpu().numpy())
+            if weights is not None:
+                sample_weights.extend(weights.cpu().numpy())
+    network.train()
+
+    f1score_ = f1_score(y_true, y_pred, average=average, sample_weight=sample_weights)
+    accuracy_ = accuracy_score(y_true, y_pred, sample_weight=sample_weights)
+
+    return accuracy_, f1score_
+
+    
+def f1score_torch(network, loader, weights, device, num_classes, average='micro'):
+    tp = torch.zeros(num_classes, dtype=torch.float32, device=device)
+    fp = torch.zeros(num_classes, dtype=torch.float32, device=device)
+    fn = torch.zeros(num_classes, dtype=torch.float32, device=device)
+    if weights is not None:
+        sample_weights = torch.ones(len(loader.dataset), dtype=torch.float32, device=device)
+    network.eval()
+    with torch.no_grad():
+        for i, (x, y) in enumerate(loader):
+            x = x.to(device)
+            y = y.to(device)
+            p = network.predict(x)
+            if p.size(1) == 1:
+                y_pred = p.gt(0).squeeze()
+            else:
+                y_pred = p.argmax(dim=1)
+            if weights is not None:
+                sample_weights[i*loader.batch_size:(i+1)*loader.batch_size] = weights[i]
+            for c in range(num_classes):
+                tp[c] += ((y_pred == c) & (y == c)).float().sum()
+                fp[c] += ((y_pred == c) & (y != c)).float().sum()
+                fn[c] += ((y_pred != c) & (y == c)).float().sum()
+    network.train()
+    
+    precision = tp / (tp + fp + 1e-10)
+    recall = tp / (tp + fn + 1e-10)
+    f1 = 2 * precision * recall / (precision + recall + 1e-10)
+    
+    if average == 'binary':
+        return f1[1].item()
+    elif average == 'micro':
+        tp_total = tp.sum()
+        fp_total = fp.sum()
+        fn_total = fn.sum()
+        f1_micro = (2 * tp_total / (2 * tp_total + fp_total + fn_total + 1e-10)).item()
+        return f1_micro
+    elif average == 'macro':
+        f1_macro = f1.mean().item()
+        return f1_macro
+    elif average == 'weighted' and weights is not None:
+        f1_weighted = (f1 * sample_weights).sum().item() / sample_weights.sum().item()
+        return f1_weighted
+    else:
+        raise ValueError(f"Unsupported average option: '{average}'")
+
 
 class Tee:
     def __init__(self, fname, mode="a"):

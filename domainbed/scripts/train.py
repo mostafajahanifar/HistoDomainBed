@@ -8,6 +8,7 @@ import random
 import sys
 import time
 import uuid
+from tqdm import tqdm
 
 import numpy as np
 import PIL
@@ -94,6 +95,7 @@ if __name__ == "__main__":
         device = "cuda"
     else:
         device = "cpu"
+    print(f'Using Device: {device}')
 
     if args.dataset in vars(datasets):
         dataset = vars(datasets)[args.dataset](args.data_dir,
@@ -160,7 +162,7 @@ if __name__ == "__main__":
 
     eval_loaders = [FastDataLoader(
         dataset=env,
-        batch_size=64,
+        batch_size=256,
         num_workers=dataset.N_WORKERS)
         for env, _ in (in_splits + out_splits + uda_splits)]
     eval_weights = [None for _, weights in (in_splits + out_splits + uda_splits)]
@@ -202,12 +204,13 @@ if __name__ == "__main__":
         }
         torch.save(save_dict, os.path.join(args.output_dir, filename))
 
-
+    average_type = 'binary' if dataset.num_classes==2 else 'macro'
     last_results_keys = None
-    for step in range(start_step, n_steps):
+    for step in range(start_step, n_steps): #tqdm(range(start_step, n_steps), total=n_steps-start_step):
         step_start_time = time.time()
         minibatches_device = [(x.to(device), y.to(device))
             for x,y in next(train_minibatches_iterator)]
+        
         if args.task == "domain_adaptation":
             uda_device = [x.to(device)
                 for x,_ in next(uda_minibatches_iterator)]
@@ -229,10 +232,12 @@ if __name__ == "__main__":
                 results[key] = np.mean(val)
 
             evals = zip(eval_loader_names, eval_loaders, eval_weights)
+            eval_start_time = time.time()
             for name, loader, weights in evals:
-                acc = misc.accuracy(algorithm, loader, weights, device)
+                # acc = misc.accuracy(algorithm, loader, weights, device)
+                acc, f1score = misc.accuracy_f1score(algorithm, loader, weights, device, average=average_type)
                 results[name+'_acc'] = acc
-
+                results[name+'_f1'] = f1score
             results['mem_gb'] = torch.cuda.max_memory_allocated() / (1024.*1024.*1024.)
 
             results_keys = sorted(results.keys())
@@ -241,12 +246,10 @@ if __name__ == "__main__":
                 last_results_keys = results_keys
             misc.print_row([results[key] for key in results_keys],
                 colwidth=12)
-
             results.update({
                 'hparams': hparams,
                 'args': vars(args)
             })
-
             epochs_path = os.path.join(args.output_dir, 'results.jsonl')
             with open(epochs_path, 'a') as f:
                 f.write(json.dumps(results, sort_keys=True) + "\n")

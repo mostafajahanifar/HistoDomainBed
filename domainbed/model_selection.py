@@ -71,7 +71,7 @@ class OracleSelectionMethod(SelectionMethod):
             'val_acc':  chosen_record[test_out_acc_key],
             'test_acc': chosen_record[test_in_acc_key]
         }
-
+    
 class IIDAccuracySelectionMethod(SelectionMethod):
     """Picks argmax(mean(env_out_acc for env in train_envs))"""
     name = "training-domain validation set"

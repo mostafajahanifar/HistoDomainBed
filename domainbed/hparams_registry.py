@@ -161,6 +161,10 @@ def _hparams(algorithm, dataset, random_seed):
         _hparam('batch_size', 8, lambda r: 8)
     elif dataset == 'DomainNet':
         _hparam('batch_size', 32, lambda r: int(2**r.uniform(3, 5)))
+    elif dataset in {'MIDOG22', 'HAM10K','HISTOPANTUM','MIDOG22small','CAMELYONsmall','HISTOPANTUMsmall'}:
+        _hparam('batch_size', 32, lambda r: int(2**r.uniform(5, 6)))
+    elif dataset == 'WILDSCamelyon':
+        _hparam('batch_size', 64, lambda r: int(2**r.uniform(7, 7.5)))
     else:
         _hparam('batch_size', 32, lambda r: int(2**r.uniform(3, 5.5)))
 
