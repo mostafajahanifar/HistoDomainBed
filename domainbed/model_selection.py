@@ -3,6 +3,8 @@
 import itertools
 import numpy as np
 
+METRIC = 'f1'
+
 def get_test_records(records):
     """Given records with a common test env, get the test records (i.e. the
     records with *only* that single test env and no other test envs)"""
@@ -10,10 +12,18 @@ def get_test_records(records):
 
 class SelectionMethod:
     """Abstract class whose subclasses implement strategies for model
-    selection across hparams and timesteps."""
+    selection across hparams and timesteps.
+    
+    Arguments:
+        metric: can be either 'acc' or 'f1'
+    """
 
-    def __init__(self):
-        raise TypeError
+    def __init__(self) -> None:
+        pass
+    # def __init__(self, metric):
+    #     if metric.lower() not in {'acc', 'f1'}:
+    #         raise ValueError('metric should be either acc or f1')
+    #     self.metric = metric
 
     @classmethod
     def run_acc(self, run_records):
@@ -55,7 +65,10 @@ class OracleSelectionMethod(SelectionMethod):
     """Like Selection method which picks argmax(test_out_acc) across all hparams
     and checkpoints, but instead of taking the argmax over all
     checkpoints, we pick the last checkpoint, i.e. no early stopping."""
-    name = "test-domain validation set (oracle)"
+    name = f"{METRIC} of test-domain validation set (oracle)"
+    
+    def __init__(self, metric='acc'):
+        super().__init__(metric=metric)
 
     @classmethod
     def run_acc(self, run_records):
@@ -64,17 +77,21 @@ class OracleSelectionMethod(SelectionMethod):
         if not len(run_records):
             return None
         test_env = run_records[0]['args']['test_envs'][0]
-        test_out_acc_key = 'env{}_out_acc'.format(test_env)
-        test_in_acc_key = 'env{}_in_acc'.format(test_env)
+        test_out_acc_key = 'env{}_out_{}'.format(test_env, METRIC)
+        test_in_acc_key = 'env{}_in_{}'.format(test_env, METRIC)
         chosen_record = run_records.sorted(lambda r: r['step'])[-1]
         return {
             'val_acc':  chosen_record[test_out_acc_key],
             'test_acc': chosen_record[test_in_acc_key]
         }
-    
+
 class IIDAccuracySelectionMethod(SelectionMethod):
     """Picks argmax(mean(env_out_acc for env in train_envs))"""
-    name = "training-domain validation set"
+    name = f"{METRIC} of training-domain validation set"
+    
+    # def __init__(self, metric):
+    #     super().__init__(metric=metric)
+    #     self.metric = metric
 
     @classmethod
     def _step_acc(self, record):
@@ -82,11 +99,11 @@ class IIDAccuracySelectionMethod(SelectionMethod):
         test_env = record['args']['test_envs'][0]
         val_env_keys = []
         for i in itertools.count():
-            if f'env{i}_out_acc' not in record:
+            if f'env{i}_out_{METRIC}' not in record:
                 break
             if i != test_env:
-                val_env_keys.append(f'env{i}_out_acc')
-        test_in_acc_key = 'env{}_in_acc'.format(test_env)
+                val_env_keys.append(f'env{i}_out_{METRIC}')
+        test_in_acc_key = 'env{}_in_{}'.format(test_env, METRIC)
         return {
             'val_acc': np.mean([record[key] for key in val_env_keys]),
             'test_acc': record[test_in_acc_key]
@@ -101,7 +118,10 @@ class IIDAccuracySelectionMethod(SelectionMethod):
 
 class LeaveOneOutSelectionMethod(SelectionMethod):
     """Picks (hparams, step) by leave-one-out cross validation."""
-    name = "leave-one-domain-out cross-validation"
+    name = f"{METRIC} of leave-one-domain-out cross-validation"
+    
+    def __init__(self, metric='acc'):
+        super().__init__(metric)
 
     @classmethod
     def _step_acc(self, records):
@@ -114,20 +134,20 @@ class LeaveOneOutSelectionMethod(SelectionMethod):
         test_env = test_records[0]['args']['test_envs'][0]
         n_envs = 0
         for i in itertools.count():
-            if f'env{i}_out_acc' not in records[0]:
+            if f'env{i}_out_{METRIC}' not in records[0]:
                 break
             n_envs += 1
         val_accs = np.zeros(n_envs) - 1
         for r in records.filter(lambda r: len(r['args']['test_envs']) == 2):
             val_env = (set(r['args']['test_envs']) - set([test_env])).pop()
-            val_accs[val_env] = r['env{}_in_acc'.format(val_env)]
+            val_accs[val_env] = r['env{}_in_{METRIC}'.format(val_env)]
         val_accs = list(val_accs[:test_env]) + list(val_accs[test_env+1:])
         if any([v==-1 for v in val_accs]):
             return None
         val_acc = np.sum(val_accs) / (n_envs-1)
         return {
             'val_acc': val_acc,
-            'test_acc': test_records[0]['env{}_in_acc'.format(test_env)]
+            'test_acc': test_records[0]['env{}_in_{METRIC}'.format(test_env)]
         }
 
     @classmethod
