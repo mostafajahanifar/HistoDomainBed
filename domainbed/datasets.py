@@ -236,20 +236,27 @@ class MIDOG22(MultipleDomainDataset):
         environments = [f.name for f in os.scandir(self.dir) if f.is_dir()]
         environments = sorted(environments)
 
+        if hparams['ssl']:
+            mean_v = [ 0.70322989, 0.53606487, 0.66096631 ]
+            std_v =  [ 0.21716536, 0.26081574, 0.20723464 ]
+        else:
+            mean_v = [0.485, 0.456, 0.406]
+            std_v = [0.229, 0.224, 0.225]
+        
         transform = transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize(
-                mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+                mean=mean_v, std=std_v)
         ])
 
         augment_transform = transforms.Compose([
             transforms.RandomResizedCrop(128, scale=(0.75, 1.5)),
             transforms.RandomHorizontalFlip(),
             transforms.RandomRotation(90),
-            transforms.ColorJitter(brightness=(0.5, 1.3), hue=0.2, saturation=(0.2,1.5)),
+            # transforms.ColorJitter(brightness=(0.5, 1.3), hue=0.2, saturation=(0.2,1.5)),
             transforms.ToTensor(),
             transforms.Normalize(
-                mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+                mean=mean_v, std=std_v),
         ])
 
         self.datasets = []
@@ -279,20 +286,27 @@ class MIDOG22small(MultipleDomainDataset):
         environments = [f.name for f in os.scandir(self.dir) if f.is_dir()]
         environments = sorted(environments)
 
+        if hparams['ssl']:
+            mean_v = [ 0.70322989, 0.53606487, 0.66096631 ]
+            std_v =  [ 0.21716536, 0.26081574, 0.20723464 ]
+        else:
+            mean_v = [0.485, 0.456, 0.406]
+            std_v = [0.229, 0.224, 0.225]
+        
         transform = transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize(
-                mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+                mean=mean_v, std=std_v)
         ])
 
         augment_transform = transforms.Compose([
             transforms.RandomResizedCrop(128, scale=(0.75, 1.5)),
             transforms.RandomHorizontalFlip(),
             transforms.RandomRotation(90),
-            transforms.ColorJitter(brightness=(0.5, 1.3), hue=0.2, saturation=(0.2,1.5)),
+            # transforms.ColorJitter(brightness=(0.5, 1.3), hue=0.2, saturation=(0.2,1.5)),
             transforms.ToTensor(),
             transforms.Normalize(
-                mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+                mean=mean_v, std=std_v),
         ])
 
         self.datasets = []
@@ -322,10 +336,17 @@ class HISTOPANTUM(MultipleDomainDataset):
         environments = [f.name for f in os.scandir(self.dir) if f.is_dir()]
         environments = sorted(environments)
 
+        if hparams['ssl']:
+            mean_v = [ 0.70322989, 0.53606487, 0.66096631 ]
+            std_v =  [ 0.21716536, 0.26081574, 0.20723464 ]
+        else:
+            mean_v = [0.485, 0.456, 0.406]
+            std_v = [0.229, 0.224, 0.225]
+        
         transform = transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize(
-                mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+                mean=mean_v, std=std_v)
         ])
 
         augment_transform = transforms.Compose([
@@ -335,7 +356,7 @@ class HISTOPANTUM(MultipleDomainDataset):
             # transforms.ColorJitter(brightness=(0.5, 1.3), hue=0.2, saturation=(0.2,1.5)),
             transforms.ToTensor(),
             transforms.Normalize(
-                mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+                mean=mean_v, std=std_v),
         ])
 
         self.datasets = []
@@ -365,10 +386,17 @@ class HISTOPANTUMsmall(MultipleDomainDataset):
         environments = [f.name for f in os.scandir(self.dir) if f.is_dir()]
         environments = sorted(environments)
 
+        if hparams['ssl']:
+            mean_v = [ 0.70322989, 0.53606487, 0.66096631 ]
+            std_v =  [ 0.21716536, 0.26081574, 0.20723464 ]
+        else:
+            mean_v = [0.485, 0.456, 0.406]
+            std_v = [0.229, 0.224, 0.225]
+        
         transform = transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize(
-                mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+                mean=mean_v, std=std_v)
         ])
 
         augment_transform = transforms.Compose([
@@ -378,7 +406,7 @@ class HISTOPANTUMsmall(MultipleDomainDataset):
             # transforms.ColorJitter(brightness=(0.5, 1.3), hue=0.2, saturation=(0.2,1.5)),
             transforms.ToTensor(),
             transforms.Normalize(
-                mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+                mean=mean_v, std=std_v),
         ])
 
         self.datasets = []
@@ -408,10 +436,16 @@ class CAMELYONsmall(MultipleDomainDataset):
         environments = [f.name for f in os.scandir(self.dir) if f.is_dir()]
         environments = sorted(environments)
 
+        if hparams['ssl']:
+            mean_v = [ 0.70322989, 0.53606487, 0.66096631 ]
+            std_v =  [ 0.21716536, 0.26081574, 0.20723464 ]
+        else:
+            mean_v = [0.485, 0.456, 0.406]
+            std_v = [0.229, 0.224, 0.225]
         transform = transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize(
-                mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+                mean=mean_v, std=std_v)
         ])
 
         augment_transform = transforms.Compose([
@@ -421,7 +455,7 @@ class CAMELYONsmall(MultipleDomainDataset):
             transforms.ColorJitter(brightness=(0.5, 1.3), hue=0.2, saturation=(0.2,1.5)),
             transforms.ToTensor(),
             transforms.Normalize(
-                mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+                mean=mean_v, std=std_v),
         ])
 
         self.datasets = []
@@ -563,22 +597,30 @@ class WILDSDataset(MultipleDomainDataset):
     def __init__(self, dataset, metadata_name, test_envs, augment, hparams):
         super().__init__()
 
+        if hparams['ssl']:
+            mean_v = [ 0.70322989, 0.53606487, 0.66096631 ]
+            std_v =  [ 0.21716536, 0.26081574, 0.20723464 ]
+        else:
+            mean_v = [0.485, 0.456, 0.406]
+            std_v = [0.229, 0.224, 0.225]
+
         transform = transforms.Compose([
             transforms.Resize((96, 96)),
             transforms.ToTensor(),
             transforms.Normalize(
-                mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+                mean=mean_v, std=std_v)
         ])
 
         augment_transform = transforms.Compose([
             transforms.Resize((96, 96)),
             transforms.RandomResizedCrop(96, scale=(0.7, 1.0)),
             transforms.RandomHorizontalFlip(),
-            transforms.ColorJitter(0.3, 0.3, 0.3, 0.3),
-            transforms.RandomGrayscale(),
+            transforms.ColorJitter(brightness=(0.5, 1.3), hue=0.2, saturation=(0.2,1.5)),
+            # transforms.ColorJitter(0.3, 0.3, 0.3, 0.3),
+            # transforms.RandomGrayscale(),
             transforms.ToTensor(),
             transforms.Normalize(
-                mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+                mean=mean_v, std=std_v),
         ])
 
         self.datasets = []
