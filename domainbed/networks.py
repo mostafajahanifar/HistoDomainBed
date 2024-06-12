@@ -73,6 +73,13 @@ class ResNet(torch.nn.Module):
         if hparams['resnet18']:
             self.network = torchvision.models.resnet18(pretrained=True)
             self.n_outputs = 512
+        elif hparams['ssl']:
+            self.network = torchvision.models.resnet50(pretrained=True)
+            pretrained_url = "https://github.com/lunit-io/benchmark-ssl-pathology/releases/download/pretrained-weights/bt_rn50_ep200.torch"
+            model_state_dict = torch.hub.load_state_dict_from_url(pretrained_url, progress=True)
+            self.network.fc = Identity()
+            _ = self.network.load_state_dict(model_state_dict)
+            self.n_outputs = 2048
         else:
             self.network = torchvision.models.resnet50(pretrained=True)
             self.n_outputs = 2048
