@@ -39,6 +39,8 @@ def _hparams(algorithm, dataset, random_seed):
     # corresponds to exactly one algorithm.
     if algorithm == 'SSL':
         _hparam('ssl', True, lambda r: True)
+    else:
+        _hparam('ssl', False, lambda r: False)
 
     if algorithm in ['DANN', 'CDANN']:
         _hparam('lambda', 1.0, lambda r: 10**r.uniform(-2, 2))
