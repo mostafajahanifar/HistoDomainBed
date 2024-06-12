@@ -80,6 +80,7 @@ class ResNet(torch.nn.Module):
             self.network.fc = Identity()
             _ = self.network.load_state_dict(model_state_dict)
             self.n_outputs = 2048
+            print("Successfully load the SSL Barlow-Twins pretrained weights on TCGA")
         else:
             self.network = torchvision.models.resnet50(pretrained=True)
             self.n_outputs = 2048
