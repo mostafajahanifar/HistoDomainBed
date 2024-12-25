@@ -1,3 +1,9 @@
+# HISTOPANTUM
+This repository contains the edited fork of DomainBed for benchmarking domain generalization algorithms in computational pathology. For more information, please read the following publication:
+
+# HISTOPANTUM Dataset
+The HISTOPANTUM dataset related to the publication above can be accessed here: https://doi.org/10.5281/zenodo.14555794
+
 # Welcome to DomainBed
 
 DomainBed is a PyTorch suite containing benchmark datasets and algorithms for domain generalization, as introduced in [In Search of Lost Domain Generalization](https://arxiv.org/abs/2007.01434).
