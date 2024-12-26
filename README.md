@@ -1,4 +1,4 @@
-# HISTOPANTUM
+# HistoDomainBed
 This repository contains the edited fork of DomainBed for benchmarking domain generalization algorithms in computational pathology. For more information, please read the following publication:
 
 # HISTOPANTUM Dataset
