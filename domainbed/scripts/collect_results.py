@@ -23,6 +23,8 @@ from domainbed import model_selection
 from domainbed.lib.query import Q
 import warnings
 
+import csv
+
 def compute_step_times(records):
     """Compute step_time statistics grouped by (dataset, algorithm)."""
     step_time_data = collections.defaultdict(list)
@@ -199,18 +201,6 @@ def print_results_tables(records, selection_method, latex, step_time_data=None):
         header_text = "Step Time (s), model selection method: {}".format(selection_method.name)
         print_table(table, header_text, alg_names, col_labels, colwidth=25, latex=latex)
 
-    # if step_time_data:
-    #     if latex:
-    #         print("\\subsubsection{Step Time Summary (in seconds)}")
-
-    #     print("\nStep Time (mean ± std) per (dataset, algorithm):")
-    #     for (dataset, algorithm), (mean, std) in sorted(step_time_data.items()):
-    #         if latex:
-    #             print(f"{dataset} / {algorithm}: {mean:.3f} $\\pm$ {std:.3f}")
-    #         else:
-    #             print(f"{dataset} / {algorithm}: {mean:.3f} ± {std:.3f}")
-
-
 if __name__ == "__main__":
     np.set_printoptions(suppress=True)
 
@@ -251,6 +241,12 @@ if __name__ == "__main__":
         # print_results_tables(records, selection_method, args.latex)
         print_results_tables(records, selection_method, args.latex, step_time_data)
 
+    step_time_output_path = os.path.join(args.input_dir, "step_time_stats.csv")
+    with open(step_time_output_path, mode="w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(["Dataset", "Algorithm", "StepTimeMean", "StepTimeStd"])
+        for (dataset, algorithm), (mean, std) in sorted(step_time_data.items()):
+            writer.writerow([dataset, algorithm, f"{mean:.6f}", f"{std:.6f}"]
 
     if args.latex:
         print("\\end{document}")
