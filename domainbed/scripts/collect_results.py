@@ -246,7 +246,7 @@ if __name__ == "__main__":
         writer = csv.writer(f)
         writer.writerow(["Dataset", "Algorithm", "StepTimeMean", "StepTimeStd"])
         for (dataset, algorithm), (mean, std) in sorted(step_time_data.items()):
-            writer.writerow([dataset, algorithm, f"{mean:.6f}", f"{std:.6f}"]
+            writer.writerow([dataset, algorithm, f"{mean:.6f}", f"{std:.6f}"])
 
     if args.latex:
         print("\\end{document}")
