@@ -37,10 +37,12 @@ def _hparams(algorithm, dataset, random_seed):
 
     # Algorithm-specific hparam definitions. Each block of code below
     # corresponds to exactly one algorithm.
-    if algorithm == 'SSL':
-        _hparam('ssl', True, lambda r: True)
-    else:
-        _hparam('ssl', False, lambda r: False)
+    # if algorithm == 'SSL':
+    #     _hparam('ssl', True, lambda r: True)
+    # else:
+    #     _hparam('ssl', False, lambda r: False)
+    # NASTY WORKAROUND: to always use SSL
+    _hparam('ssl', True, lambda r: True)
 
     if algorithm in ['DANN', 'CDANN']:
         _hparam('lambda', 1.0, lambda r: 10**r.uniform(-2, 2))
@@ -151,6 +153,8 @@ def _hparams(algorithm, dataset, random_seed):
 
     if dataset in SMALL_IMAGES:
         _hparam('lr', 1e-3, lambda r: 10**r.uniform(-4.5, -2.5))
+    elif hparams.get('ssl', False):
+        _hparam('lr', 5e-5, lambda r: 10**r.uniform(-5, -4))
     else:
         _hparam('lr', 5e-5, lambda r: 10**r.uniform(-5, -3.5))
 

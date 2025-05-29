@@ -20,10 +20,7 @@ class SelectionMethod:
 
     def __init__(self) -> None:
         pass
-    # def __init__(self, metric):
-    #     if metric.lower() not in {'acc', 'f1'}:
-    #         raise ValueError('metric should be either acc or f1')
-    #     self.metric = metric
+
 
     @classmethod
     def run_acc(self, run_records):
@@ -88,10 +85,6 @@ class OracleSelectionMethod(SelectionMethod):
 class IIDAccuracySelectionMethod(SelectionMethod):
     """Picks argmax(mean(env_out_acc for env in train_envs))"""
     name = f"{METRIC} of training-domain validation set"
-    
-    # def __init__(self, metric):
-    #     super().__init__(metric=metric)
-    #     self.metric = metric
 
     @classmethod
     def _step_acc(self, record):

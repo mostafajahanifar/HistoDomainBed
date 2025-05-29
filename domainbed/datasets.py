@@ -253,7 +253,7 @@ class MIDOG22(MultipleDomainDataset):
             transforms.RandomResizedCrop(128, scale=(0.75, 1.5)),
             transforms.RandomHorizontalFlip(),
             transforms.RandomRotation(90),
-            # transforms.ColorJitter(brightness=(0.5, 1.3), hue=0.2, saturation=(0.2,1.5)),
+            transforms.ColorJitter(brightness=(0.5, 1.3), hue=0.2, saturation=(0.2,1.5)),
             transforms.ToTensor(),
             transforms.Normalize(
                 mean=mean_v, std=std_v),
@@ -353,7 +353,7 @@ class HISTOPANTUM(MultipleDomainDataset):
             transforms.RandomResizedCrop(224, scale=(0.75, 1.5)),
             transforms.RandomHorizontalFlip(),
             transforms.RandomRotation(90),
-            # transforms.ColorJitter(brightness=(0.5, 1.3), hue=0.2, saturation=(0.2,1.5)),
+            transforms.ColorJitter(brightness=(0.5, 1.3), hue=0.2, saturation=(0.2,1.5)),
             transforms.ToTensor(),
             transforms.Normalize(
                 mean=mean_v, std=std_v),

@@ -1,9 +1,8 @@
 import os
 import cv2
 import logging
-from tqdm import tqdm
 from tiatoolbox.tools.stainnorm import MacenkoNormalizer
-from multiprocessing import Pool, Manager
+from multiprocessing import Pool
 import argparse
 
 # Configure logging
@@ -31,7 +30,7 @@ def process_image(args):
         source_img = cv2.imread(source_img_path)[..., ::-1]
         normalized_img = fitted_normalizer.transform(source_img)
         cv2.imwrite(target_img_path, normalized_img[..., ::-1])
-        # logging.info(f"Processed {source_img_path} and saved to {target_img_path}")
+        logging.info(f"Processed {source_img_path}")
     except Exception as e:
         logging.error(f"Error processing {source_img_path}: {e}")
 
@@ -43,30 +42,16 @@ def normalize_images(source_root, target_root, target_img_path):
     logging.info("Fitting the stain normalizer with the target image.")
     stain_normalizer.fit(target_img)
 
-    with Manager() as manager:
-        shared_normalizer = manager.Namespace()
-        shared_normalizer.normalizer = stain_normalizer
+    image_paths = find_images(source_root)
 
-        image_paths = find_images(source_root)
+    tasks = []
+    for source_img_path in image_paths:
+        target_img_path = create_target_dir_structure(source_root, target_root, source_img_path)
+        tasks.append((source_img_path, target_img_path, stain_normalizer))
 
-        tasks = []
-        for source_img_path in image_paths:
-            target_img_path = create_target_dir_structure(source_root, target_root, source_img_path)
-            tasks.append((source_img_path, target_img_path, shared_normalizer.normalizer))
-
-        logging.info("Starting the normalization process...")
-        with Pool(4) as pool:
-            progress_bar = tqdm(total=len(tasks), desc=source_root.split("/")[-1])
-
-            def update(*a):
-                progress_bar.update()
-
-            for task in tasks:
-                pool.apply_async(process_image, args=(task,), callback=update)
-
-            pool.close()
-            pool.join()
-            progress_bar.close()
+    logging.info("Starting the normalization process...")
+    with Pool(8) as pool:
+        pool.map(process_image, tasks)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Normalize histology images' stains.")

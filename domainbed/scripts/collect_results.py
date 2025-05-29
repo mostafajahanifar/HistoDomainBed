@@ -23,6 +23,28 @@ from domainbed import model_selection
 from domainbed.lib.query import Q
 import warnings
 
+def compute_step_times(records):
+    """Compute step_time statistics grouped by (dataset, algorithm)."""
+    step_time_data = collections.defaultdict(list)
+
+    for r in records:  # records is a Q object (i.e., a list of dicts)
+        if "step_time" in r and r["step_time"] is not None:
+            dataset = r["args"]["dataset"]
+            algorithm = r["args"]["algorithm"]
+            step_time = r["step_time"]
+            step_time_data[(dataset, algorithm)].append(step_time)
+
+    # Compute mean and std
+    step_time_summary = {}
+    for key, times in step_time_data.items():
+        mean = np.mean(times)
+        std = np.std(times)
+        step_time_summary[key] = (mean, std)
+
+    return step_time_summary
+
+
+
 def format_mean(data, latex):
     """Given a list of datapoints, return a string describing their mean and
     standard error"""
@@ -66,7 +88,8 @@ def print_table(table, header_text, row_labels, col_labels, colwidth=10,
         print("\\end{tabular}}")
         print("\\end{center}")
 
-def print_results_tables(records, selection_method, latex):
+# def print_results_tables(records, selection_method, latex):
+def print_results_tables(records, selection_method, latex, step_time_data=None):
     """Given all records, print a results table for each dataset."""
     grouped_records = reporting.get_grouped_records(records).map(lambda group:
         { **group, "sweep_acc": selection_method.sweep_acc(group["records"]) }
@@ -140,6 +163,53 @@ def print_results_tables(records, selection_method, latex):
     header_text = f"Averages, model selection method: {selection_method.name}"
     print_table(table, header_text, alg_names, col_labels, colwidth=25,
         latex=latex)
+    
+    print_table(table, header_text, alg_names, col_labels, colwidth=25,
+        latex=latex)
+    
+    # ---- STEP TIME SUMMARY ----
+        # Print step time table
+    if step_time_data:
+        if latex:
+            print()
+            print("\\subsubsection{Step Time (seconds)}")
+
+        table = [[None for _ in [*dataset_names, "Avg"]] for _ in alg_names]
+
+        for i, algorithm in enumerate(alg_names):
+            means = []
+            for j, dataset in enumerate(dataset_names):
+                key = (dataset, algorithm)
+                if key in step_time_data:
+                    mean, std = step_time_data[key]
+                    means.append(mean)
+                    if latex:
+                        table[i][j] = "{:.3f} $\\pm$ {:.3f}".format(mean, std)
+                    else:
+                        table[i][j] = "{:.3f} ± {:.3f}".format(mean, std)
+                else:
+                    table[i][j] = "X"
+            if means:
+                avg = sum(means) / len(means)
+                table[i][-1] = "{:.3f}".format(avg)
+            else:
+                table[i][-1] = "X"
+
+        col_labels = ["Algorithm", *dataset_names, "Avg"]
+        header_text = "Step Time (s), model selection method: {}".format(selection_method.name)
+        print_table(table, header_text, alg_names, col_labels, colwidth=25, latex=latex)
+
+    # if step_time_data:
+    #     if latex:
+    #         print("\\subsubsection{Step Time Summary (in seconds)}")
+
+    #     print("\nStep Time (mean ± std) per (dataset, algorithm):")
+    #     for (dataset, algorithm), (mean, std) in sorted(step_time_data.items()):
+    #         if latex:
+    #             print(f"{dataset} / {algorithm}: {mean:.3f} $\\pm$ {std:.3f}")
+    #         else:
+    #             print(f"{dataset} / {algorithm}: {mean:.3f} ± {std:.3f}")
+
 
 if __name__ == "__main__":
     np.set_printoptions(suppress=True)
@@ -155,6 +225,7 @@ if __name__ == "__main__":
     sys.stdout = misc.Tee(os.path.join(args.input_dir, results_file), "w")
 
     records = reporting.load_records(args.input_dir)
+    step_time_data = compute_step_times(records)
 
     if args.latex:
         print("\\documentclass{article}")
@@ -177,7 +248,9 @@ if __name__ == "__main__":
             print()
             print("\\subsection{{Model selection: {}}}".format(
                 selection_method.name))
-        print_results_tables(records, selection_method, args.latex)
+        # print_results_tables(records, selection_method, args.latex)
+        print_results_tables(records, selection_method, args.latex, step_time_data)
+
 
     if args.latex:
         print("\\end{document}")
