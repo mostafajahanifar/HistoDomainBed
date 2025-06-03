@@ -35,17 +35,17 @@ To use any dataset with **HistoDomainBed**, organize it as follows:
 ```bash
 /data/
 └── HistoPANTUM/
-    ├── Hospital_A/              # Domain 1
+    ├── colon/              # Domain 1
     │   ├── tumor/
     │   │   ├── img001.png
     │   │   ├── img002.png
     │   └── non_tumor/
     │       ├── img003.png
     │       ├── img004.png
-    ├── Hospital_B/              # Domain 2
+    ├── ovarian/              # Domain 2
     │   ├── tumor/
     │   └── non_tumor/
-    └── Hospital_C/              # Domain 3
+    └── stomach/              # Domain 3
         ├── tumor/
         └── non_tumor/
 ```
@@ -62,11 +62,40 @@ This structure enables HistoDomainBed to automatically identify domains and clas
 HistoDomainBed is a **extension of DomainBed**, tailored to CPath:
 
 - 🏛️ **Backbone**: ResNet-50 (fixed for fair comparison)
-- 🧪 **Pretraining**: BT-TCGA (Barlow Twins trained on TCGA)
-- 🧠 **DG Algorithms**: DomainBed Algorithms (see below) + BT-TCGA (ERM model weights initialized with Barlow Twins pretrained on TCGA taken from [lunit-io/benchmark-ssl-pathology](https://github.com/lunit-io/benchmark-ssl-pathology)) + Stain Augmentation (ERM with Stain Augmentation) + Stain Normalization (this one is just ERM used on normalized images)
 - 🧪 **Tasks**: : Metastasis Detection (CAMELYON dataset), Mitosis Detection (MIDOG22 dataset), and Tumor Detection (HistoPANTUM)
+- 🧠 **DG Algorithms**: DomainBed Algorithms (see below) + BT-TCGA (ERM model weights initialized with Barlow Twins pretrained on TCGA taken from [lunit-io/benchmark-ssl-pathology](https://github.com/lunit-io/benchmark-ssl-pathology)) + Stain Augmentation (ERM with [Stain Augmentation](https://tia-toolbox.readthedocs.io/en/v1.6.0/_autosummary/tiatoolbox.tools.stainaugment.StainAugmentor.html)) + Stain Normalization (this one is just ERM used on normalized images using [Macenko algorithm](https://tia-toolbox.readthedocs.io/en/latest/_autosummary/tiatoolbox.tools.stainnorm.MacenkoNormalizer.html))
 
-> *Note:* We intentionally fix the model backbone to avoid confounding architectural effects and isolate the true impact of DG methods.
+The [currently available algorithms](domainbed/algorithms.py) are:
+
+* Empirical Risk Minimization (ERM, [Vapnik, 1998](https://www.wiley.com/en-fr/Statistical+Learning+Theory-p-9780471030034))
+* Invariant Risk Minimization (IRM, [Arjovsky et al., 2019](https://arxiv.org/abs/1907.02893))
+* Group Distributionally Robust Optimization (GroupDRO, [Sagawa et al., 2020](https://arxiv.org/abs/1911.08731))
+* Interdomain Mixup (Mixup, [Yan et al., 2020](https://arxiv.org/abs/2001.00677))
+* Marginal Transfer Learning (MTL, [Blanchard et al., 2011-2020](https://arxiv.org/abs/1711.07910))
+* Meta Learning Domain Generalization (MLDG, [Li et al., 2017](https://arxiv.org/abs/1710.03463))
+* Maximum Mean Discrepancy (MMD, [Li et al., 2018](https://openaccess.thecvf.com/content_cvpr_2018/papers/Li_Domain_Generalization_With_CVPR_2018_paper.pdf))
+* Deep CORAL (CORAL, [Sun and Saenko, 2016](https://arxiv.org/abs/1607.01719))
+* Domain Adversarial Neural Network (DANN, [Ganin et al., 2015](https://arxiv.org/abs/1505.07818))
+* Conditional Domain Adversarial Neural Network (CDANN, [Li et al., 2018](https://openaccess.thecvf.com/content_ECCV_2018/papers/Ya_Li_Deep_Domain_Generalization_ECCV_2018_paper.pdf))
+* Style Agnostic Networks (SagNet, [Nam et al., 2020](https://arxiv.org/abs/1910.11645))
+* Adaptive Risk Minimization (ARM, [Zhang et al., 2020](https://arxiv.org/abs/2007.02931)), contributed by [@zhangmarvin](https://github.com/zhangmarvin)
+* Variance Risk Extrapolation (VREx, [Krueger et al., 2020](https://arxiv.org/abs/2003.00688)), contributed by [@zdhNarsil](https://github.com/zdhNarsil)
+* Representation Self-Challenging (RSC, [Huang et al., 2020](https://arxiv.org/abs/2007.02454)), contributed by [@SirRob1997](https://github.com/SirRob1997)
+* Spectral Decoupling (SD, [Pezeshki et al., 2020](https://arxiv.org/abs/2011.09468))
+* Learning Explanations that are Hard to Vary (AND-Mask, [Parascandolo et al., 2020](https://arxiv.org/abs/2009.00329))
+* Out-of-Distribution Generalization with Maximal Invariant Predictor (IGA, [Koyama et al., 2020](https://arxiv.org/abs/2008.01883))
+* Gradient Matching for Domain Generalization (Fish, [Shi et al., 2021](https://arxiv.org/pdf/2104.09937.pdf))
+* Self-supervised Contrastive Regularization (SelfReg, [Kim et al., 2021](https://arxiv.org/abs/2104.09841))
+* Smoothed-AND mask (SAND-mask, [Shahtalebi et al., 2021](https://arxiv.org/abs/2106.02266))
+* Invariant Gradient Variances for Out-of-distribution Generalization (Fishr, [Rame et al., 2021](https://arxiv.org/abs/2109.02934))
+* Learning Representations that Support Robust Transfer of Predictors (TRM, [Xu et al., 2021](https://arxiv.org/abs/2110.09940))
+* Invariance Principle Meets Information Bottleneck for Out-of-Distribution Generalization (IB-ERM , [Ahuja et al., 2021](https://arxiv.org/abs/2106.06607))
+* Invariance Principle Meets Information Bottleneck for Out-of-Distribution Generalization (IB-IRM, [Ahuja et al., 2021](https://arxiv.org/abs/2106.06607))
+* Optimal Representations for Covariate Shift (CAD & CondCAD, [Ruan et al., 2022](https://arxiv.org/abs/2201.00057)), contributed by [@ryoungj](https://github.com/ryoungj)
+* Quantifying and Improving Transferability in Domain Generalization (Transfer, [Zhang et al., 2021](https://arxiv.org/abs/2106.03632)), contributed by [@Gordon-Guojun-Zhang](https://github.com/Gordon-Guojun-Zhang)
+* Invariant Causal Mechanisms through Distribution Matching (CausIRL with CORAL or MMD, [Chevalley et al., 2022](https://arxiv.org/abs/2206.11646)), contributed by [@MathieuChevalley](https://github.com/MathieuChevalley)
+* Empirical Quantile Risk Minimization (EQRM, [Eastwood et al., 2022](https://arxiv.org/abs/2207.09944)), contributed by [@cianeastwood](https://github.com/cianeastwood)
+
 
 ---
 
