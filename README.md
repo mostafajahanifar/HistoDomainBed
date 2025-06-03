@@ -10,43 +10,63 @@
 
 **HistoDomainBed** is an open-source extension of the [DomainBed](https://github.com/facebookresearch/DomainBed) framework, specifically adapted for the **computational pathology (CPath)** domain. It provides a rigorous and reproducible pipeline for evaluating **domain generalization (DG)** algorithms on pathology image classification tasks, including support for stain augmentation, self-supervised pretrained models initialization, histopathology image dataset, F1 score for evaluation, and more.
 
-📌 **Main paper**: _Comparative Benchmarking of Domain Generalization in Computational Pathology_  
+📌 **Main paper**: [_Comparative Benchmarking of Domain Generalization in Computational Pathology_](https://arxiv.org/abs/2409.17063)  
 📁 **Dataset**: [HistoPANTUM Dataset](https://zenodo.org/records/14555794)  
-🧠 **Built on top of**: [DomainBed (Facebook AI Research)](https://github.com/facebookresearch/DomainBed)
+🧠 **Built on top of**: [DomainBed (Facebook AI Research)](https://github.com/facebookresearch/DomainBed)  
+📊 **Comprehensive experiment logging and reproducibility** including 7,560+ runs across algorithms/tasks/settings
+![full_domains_f1](https://github.com/user-attachments/assets/4d9e13b2-0b6c-44d9-95c1-dfd17e3dbddc)
 
----
-
-## 🔍 Key Features
-
-- ⚙️ **30+ DG algorithms** implemented and evaluated
-- 🧫 **Three real-world CPath tasks** with domain shifts
-- 🧠 **Barlow Twins-pretrained model** for SSL initialization (taken from [lunit-io/benchmark-ssl-pathology](https://github.com/lunit-io/benchmark-ssl-pathology))
-- 🎨 **Pathology-specific algorithms** including stain augmentation and stain normalization.
-- 📊 **Comprehensive experiment logging and reproducibility** including 7,560+ runs across algorithms/tasks/settings
 
 ---
 
 ## 🧬 The HistoPANTUM Dataset
 
-The **HistoPANTUM dataset** is a curated, multi-center TCGA-based dataset for tumor vs. non-tumor classification, designed to introduce **realistic domain shifts** across tissue source sites. It consists of:
+The **HistoPANTUM dataset** is a curated, multi-center TCGA-based dataset for tumor vs. non-tumor classification, designed to introduce **realistic domain shifts** across tissue source sites. It is annotated by an expert pathologist and consists of image patches from clearly distinguishable tumor and non-tumor regions.
 
-- 🧠 **Expert-annotated regions** from 50+ whole slide images
-- 🧪 **Clearly distinguishable tumor and non-tumor** ROIs annotated by a senior pathologist
-- 🖼️ Extracted patches (224×224) from multiple hospitals (i.e., domains)
-- 📤 Available for download at: [Zenodo](https://zenodo.org/records/14555794)
+- 🧠 Task: Binary classification (tumor vs. non-tumor)
+- 🏥 Domains: Different tumor sites (cancer types)
+- 🖼️ Images: 140,569 H&E-stained tiles of 224 × 224 pixels (approximately 1 mpp resolution)
+- 📤 Download: [Zenodo – HistoPANTUM](https://zenodo.org/records/14555794)
+
+### 📁 Dataset Directory Structure
+
+To use any dataset with **HistoDomainBed**, organize it as follows:
+
+```bash
+/data/
+└── HistoPANTUM/
+    ├── Hospital_A/              # Domain 1
+    │   ├── tumor/
+    │   │   ├── img001.png
+    │   │   ├── img002.png
+    │   └── non_tumor/
+    │       ├── img003.png
+    │       ├── img004.png
+    ├── Hospital_B/              # Domain 2
+    │   ├── tumor/
+    │   └── non_tumor/
+    └── Hospital_C/              # Domain 3
+        ├── tumor/
+        └── non_tumor/
+```
+Each dataset should follow this hierarchy:  
+🔹 Top-level folder: Name of the dataset (✅ Compatible datasets: HISTOPANTUM, MIDOG, CAMELYON)  
+🔹 Subfolders: Each domain (typically a source site or hospital)  
+🔹 Sub-subfolders: Each class (e.g., tumor, non_tumor)  
+This structure enables HistoDomainBed to automatically identify domains and class labels for DG training and evaluation.
 
 ---
 
 ## 🏗️ Architecture and Design
 
-HistoDomainBed is a **modular extension of DomainBed**, tailored to CPath:
+HistoDomainBed is a **extension of DomainBed**, tailored to CPath:
 
 - 🏛️ **Backbone**: ResNet-50 (fixed for fair comparison)
 - 🧪 **Pretraining**: BT-TCGA (Barlow Twins trained on TCGA)
-- 🧠 **DG Algorithms**: CausIRL, ARM, CORAL, Transfer, EQRM, etc.
+- 🧠 **DG Algorithms**: DomainBed Algorithms (see below) + BT-TCGA (ERM model weights initialized with Barlow Twins pretrained on TCGA taken from [lunit-io/benchmark-ssl-pathology](https://github.com/lunit-io/benchmark-ssl-pathology)) + Stain Augmentation (ERM with Stain Augmentation) + Stain Normalization (this one is just ERM used on normalized images)
 - 🧪 **Tasks**: : Metastasis Detection (CAMELYON dataset), Mitosis Detection (MIDOG22 dataset), and Tumor Detection (HistoPANTUM)
 
-> 🧠 *Note:* We intentionally fix the model backbone to avoid confounding architectural effects and isolate the true impact of DG methods.
+> *Note:* We intentionally fix the model backbone to avoid confounding architectural effects and isolate the true impact of DG methods.
 
 ---
 
