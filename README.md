@@ -50,7 +50,7 @@ To use any dataset with **HistoDomainBed**, organize it as follows:
         └── non_tumor/
 ```
 Each dataset should follow this hierarchy:  
-🔹 Top-level folder: Name of the dataset (✅ Compatible datasets: HISTOPANTUM, MIDOG, CAMELYON)  
+🔹 Top-level folder: Name of the dataset (✅ Compatible datasets: HISTOPANTUM, MIDOG22, CAMELYON17)  
 🔹 Subfolders: Each domain (typically a source site or hospital)  
 🔹 Sub-subfolders: Each class (e.g., tumor, non_tumor)  
 This structure enables HistoDomainBed to automatically identify domains and class labels for DG training and evaluation.
