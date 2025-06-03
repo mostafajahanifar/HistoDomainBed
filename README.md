@@ -1,3 +1,64 @@
+# 🧪 HistoDomainBed
+
+> A comparative benchmarking framework for **Domain Generalization** in **Computational Pathology**
+
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/)
+[![Built on DomainBed](https://img.shields.io/badge/Built%20on-DomainBed-ff69b4)](https://github.com/facebookresearch/DomainBed)
+
+---
+
+**HistoDomainBed** is an open-source extension of the [DomainBed](https://github.com/facebookresearch/DomainBed) framework, specifically adapted for the **computational pathology (CPath)** domain. It provides a rigorous and reproducible pipeline for evaluating **domain generalization (DG)** algorithms on pathology image classification tasks, including support for stain augmentation, self-supervised pretrained models initialization, histopathology image dataset, F1 score for evaluation, and more.
+
+📌 **Main paper**: _Comparative Benchmarking of Domain Generalization in Computational Pathology_  
+📁 **Dataset**: [HistoPANTUM Dataset](https://zenodo.org/records/14555794)  
+🧠 **Built on top of**: [DomainBed (Facebook AI Research)](https://github.com/facebookresearch/DomainBed)
+
+---
+
+## 🔍 Key Features
+
+- ⚙️ **30+ DG algorithms** implemented and evaluated
+- 🧫 **Three real-world CPath tasks** with domain shifts
+- 🧠 **Barlow Twins-pretrained model** for SSL initialization (taken from [lunit-io/benchmark-ssl-pathology](https://github.com/lunit-io/benchmark-ssl-pathology))
+- 🎨 **Pathology-specific algorithms** including stain augmentation and stain normalization.
+- 📊 **Comprehensive experiment logging and reproducibility** including 7,560+ runs across algorithms/tasks/settings
+
+---
+
+## 🧬 The HistoPANTUM Dataset
+
+The **HistoPANTUM dataset** is a curated, multi-center TCGA-based dataset for tumor vs. non-tumor classification, designed to introduce **realistic domain shifts** across tissue source sites. It consists of:
+
+- 🧠 **Expert-annotated regions** from 50+ whole slide images
+- 🧪 **Clearly distinguishable tumor and non-tumor** ROIs annotated by a senior pathologist
+- 🖼️ Extracted patches (224×224) from multiple hospitals (i.e., domains)
+- 📤 Available for download at: [Zenodo](https://zenodo.org/records/14555794)
+
+---
+
+## 🏗️ Architecture and Design
+
+HistoDomainBed is a **modular extension of DomainBed**, tailored to CPath:
+
+- 🏛️ **Backbone**: ResNet-50 (fixed for fair comparison)
+- 🧪 **Pretraining**: BT-TCGA (Barlow Twins trained on TCGA)
+- 🧠 **DG Algorithms**: CausIRL, ARM, CORAL, Transfer, EQRM, etc.
+- 🧪 **Tasks**: : Metastasis Detection (CAMELYON dataset), Mitosis Detection (MIDOG22 dataset), and Tumor Detection (HistoPANTUM)
+
+> 🧠 *Note:* We intentionally fix the model backbone to avoid confounding architectural effects and isolate the true impact of DG methods.
+
+---
+
+## 🚀 Getting Started
+
+### 📦 Installation
+
+```bash
+git clone https://github.com/<your-org>/HistoDomainBed.git
+cd HistoDomainBed
+pip install -r requirements.txt
+
 # Welcome to DomainBed
 
 DomainBed is a PyTorch suite containing benchmark datasets and algorithms for domain generalization, as introduced in [In Search of Lost Domain Generalization](https://arxiv.org/abs/2007.01434).
